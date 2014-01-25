@@ -288,12 +288,12 @@ def get_prods_by_cat(cat_id, prods):
 	match_prods = filter(lambda p: p['category']['id'] == cat_id, prods)
 	return match_prods
 
-def tally_features(cats, prods):
-	'''makes a comprehensive list of all features found among all the products
+def tally_attributes(cats, prods):
+	'''makes a comprehensive list of all attributes found among all the products
 	of leaf categories.  Input is a flattened phonebook of categories (to
 	find leaf categories, and a listing of all products.'''
 
-	# We will tally features over leaf categories.  First, get the leaf
+	# We will tally attributes over leaf categories.  First, get the leaf
 	# categories
 	leaf_cats = filter(lambda c: len(c['children'])==0, cats.values())
 
@@ -377,97 +377,97 @@ def tally_features(cats, prods):
 			# convert values to a list so it can be jsonified
 			spec['values'] = list(spec['values'])
 
-		cat['features'] = dict(cat_ratings.items() + cat_specs.items())
-		if cat_union is None or not len(cat['features']):
+		cat['attributes'] = dict(cat_ratings.items() + cat_specs.items())
+		if cat_union is None or not len(cat['attributes']):
 			cat['jaccard'] = None
 		else:
-			cat['jaccard'] = len(cat_union) / float(len(cat['features']))
+			cat['jaccard'] = len(cat_union) / float(len(cat['attributes']))
 	
 	return cats
 
 
-def roll_up_features(cats):
+def roll_up_attributes(cats):
 	'''cats should be a flat listing of categories that thas been annotated
-	with listings of the features, and counts of their occurrence, in the
+	with listings of the attributes, and counts of their occurrence, in the
 	products contained in the categories.  I.e, cats should be the output
-	of tally_features.
+	of tally_attributes.
 	This rolls counts up to higher categories.
 	'''
 	# We'll start at the level of franchises
 	franchises = get_franchises(cats)
 
 	for franch in franchises:
-		recurse_roll_up_features(franch, cats)
+		recurse_roll_up_attributes(franch, cats)
 	
-	# convert feature value sets into lists for jsonifying
+	# convert attribute value sets into lists for jsonifying
 	for cat in cats.values():
-		for feat in cat['features'].values():
+		for feat in cat['attributes'].values():
 			feat['values'] = list(feat['values'])
 
 	return cats
 		
 
-def recurse_roll_up_features(cat, cats):
+def recurse_roll_up_attributes(cat, cats):
 
 	if len(cat['children']):
 		# Merge counts from its children
-		features = {}
-		features_union = None
+		attributes = {}
+		attributes_union = None
 		for child_id in cat['children']:
 			child_cat = cats[child_id]
-			child_features = recurse_roll_up_features(child_cat, cats) 
-			if features_union is None:
-				features_union = set(child_features.keys())
+			child_attributes = recurse_roll_up_attributes(child_cat, cats) 
+			if attributes_union is None:
+				attributes_union = set(child_attributes.keys())
 			else:
-				features_union &= set(child_features.keys())
+				attributes_union &= set(child_attributes.keys())
 
-			for feature_id, feature in child_features.items():
-				if feature_id not in features:
-					features[feature_id] = {}
-					features[feature_id]['count'] = 0
-					features[feature_id]['values'] = set()
-					features[feature_id]['name'] = feature['name']
-					features[feature_id]['CR_fields'] = feature['CR_fields']
+			for attribute_id, attribute in child_attributes.items():
+				if attribute_id not in attributes:
+					attributes[attribute_id] = {}
+					attributes[attribute_id]['count'] = 0
+					attributes[attribute_id]['values'] = set()
+					attributes[attribute_id]['name'] = attribute['name']
+					attributes[attribute_id]['CR_fields'] = attribute['CR_fields']
 
-				features[feature_id]['count'] += feature['count']
-				features[feature_id]['values'] |= feature['values']
+				attributes[attribute_id]['count'] += attribute['count']
+				attributes[attribute_id]['values'] |= attribute['values']
 
 		# Do aggregation
-		if len(features):
-			cat['jaccard'] = len(features_union) / float(len(features))
+		if len(attributes):
+			cat['jaccard'] = len(attributes_union) / float(len(attributes))
 		else:
 			cat['jaccard'] = None
 
-		for feature in features.values():
-			feature['penetration'] = feature['count'] / float(cat['count'])
+		for attribute in attributes.values():
+			attribute['penetration'] = attribute['count'] / float(cat['count'])
 
-		cat['features'] = features
-		return features
+		cat['attributes'] = attributes
+		return attributes
 	
 	else:
 		# serve up own cats
 		# note, higher levels always expect the 'values' to be sets.
 		# at the very end, we'll convert back to lists for json output
-		for feat in cat['features'].values():
+		for feat in cat['attributes'].values():
 			feat['values'] = set(feat['values'])
 
-		return cat['features']
+		return cat['attributes']
 
-def summarize_features(feature_annotated_cats):
-	for cat in feature_annotated_cats.values():
-		new_features = {}
-		for feature in cat['features'].values():
-			new_features[feature['name']] = feature['penetration']
+def summarize_attributes(attribute_annotated_cats):
+	for cat in attribute_annotated_cats.values():
+		new_attributes = {}
+		for attribute in cat['attributes'].values():
+			new_attributes[attribute['name']] = attribute['penetration']
 
-		if len(new_features):
+		if len(new_attributes):
 			cat['average_penetration'] = sum(
-				new_features.values()) / float(len(new_features))
+				new_attributes.values()) / float(len(new_attributes))
 		else:
 			cat['average_penetration'] = None
 
-		cat['features'] = new_features
+		cat['attributes'] = new_attributes
 	
-	return feature_annotated_cats
+	return attribute_annotated_cats
 		
 def make_tree(flat_cats):
 	'''makes a tree-like structure out of flat category structure
@@ -481,80 +481,86 @@ def make_tree(flat_cats):
 
 	return tree
 
+
 def recurse_make_tree(cat, cats):
+	tree_cat = c.deepcopy(cat)
+
 	new_children = {}
-	if len(cat['children']):
-		for child_id in cat['children']:
-			child_cat = recurse_make_tree(cats[child_id], cats)
-			new_children[child_cat['singularName']] = child_cat
-	
-		cat['children'] = new_children
-		return cat
 
-	else:
-		cat['children'] = {}
-		return cat
+	for child_id in tree_cat['children']:
+		child_cat = recurse_make_tree(cats[child_id], cats)
+		new_children[child_cat['singularName']] = child_cat
 
-def eliminate_singletons(tree, cats):
+	tree_cat['children'] = new_children
+	return tree_cat
+
+
+
+def eliminate_singletons(cats):
+
 	# This will eliminate categories that have only a single subcategory
 	# the single subcategory will be graphted in the place of the category
-	for cat_id, cat in tree.items():
+	for cat_id, cat in cats.items():
 		if len(cat['children']) is 1:
-			grapht_child = cat['children'].values()[0]
-			singleton = cat
 
-			tree[cat_id] = grapht_child
-			cats[singleton['id']]['type'] = 'singleton'
+			# this category is a singleton
+			# we will grapht its only child in its place 
+			cat['type'] = 'singleton'
+			singleton_id = cat_id
+			grapht_id = cat['children'][0]
+			parent = cats[cat['parent']]
 
-			# now the graphted child could still be a singleton, so 
-			# re-try without descending past the grapht!
-			eliminate_singletons(tree, cats)
+			# first, remove the singleton from its parent
+			parent['children'] = filter(
+					lambda c: c != singleton_id, parent['children'])
 
-		else:
-			eliminate_singletons(cat['children'], cats)
+			# grapht the only child onto the singleton's parent's child list
+			parent['children'].append(grapht_id)
+			cats[grapht_id]['parent'] = parent['id']
+
+		else: 
+			cat['type'] = 'category'
 	
-	return tree, cats
-
+	return cats
 
 			
-def coalesce_by_jaccard(tree, flat_cats, flat_equivalence={}):
-	
-	for cat_id, cat in tree.items():
-		cat['type'] = 'category'
-		cat['path_to_equivalence'] = None
-		
-		if cat['jaccard'] > 0.8:
-			cat['type'] = 'equivalence_class'
-			cat['aggregates'] = cat['children'].keys()
-			for child_id, child in cat['children'].items():
-				record_equivalence_class_membership(
-					cat, child_id, child['id'], flat_cats, 
-					path_to_equivalence=[cat['id']])
+def coalesce_by_jaccard(cats, jaccard_threshhold):
+	franchises = get_franchises(cats)
+	for franch in franchises:
+		recurse_coalesce_by_jaccard(franch['id'], cats, jaccard_threshhold)
 
-		else :
-			coalesce_by_jaccard(cat['children'], flat_cats, flat_equivalence)
+def recurse_coalesce_by_jaccard(cat_id, cats, jaccard_threshhold):
 
-		# copy the changes made to the cat entry in the tree to the entry in
-		# the flat formats, but keep the children only as references
-		flat_cats[cat['id']] = c.copy(cat)
-		flat_cats[cat['id']]['children'] = map(lambda c: c['id'], 
-				cat['children'].values())
-	
-	return (tree, flat_cats)
+	cat = cats[cat_id]
+	cat['path_to_equivalence'] = None
+
+	# The first time jaccard goes above 0.8, we have an equivalence class
+	# if we reach a leaf before this happens, the leaf is an equivalence class
+	if cat['jaccard'] > jaccard_threshhold or len(cat['children']) is 0:
+		cat['type'] = 'equivalence_class'
+
+		# Once an equivalence class is found, we don't recursively find
+		# equivalence classes, but we do recursively mark its children
+		# as type = 'sub_equivalence'.  We also record the ancestral path
+		# that leads from the equivalence class to each of its children
+		# since these sub_equivalent categorizations will be mapped to 
+		# attributes
+		for child_id in cat['children']:
+			record_equivalence_class_membership(
+				child_id, cats, path=[cat_id])
+
+	else :
+		for child_id in cat['children']:
+			recurse_coalesce_by_jaccard(child_id, cats, jaccard_threshhold)
 
 
-def record_equivalence_class_membership(cat, cat_name_id, cat_id, flat_cats, 
-	path_to_equivalence):
-	flat_cats[cat_id]['path_to_equivelance'] = path_to_equivalence
-	flat_cats[cat_id]['type'] = 'sub_equivalence'
+def record_equivalence_class_membership(cat_id, cats, path):
+	cat = cats[cat_id]
+	cat['path'] = path
+	cat['type'] = 'sub_equivalence'
 
-	this_cat = cat['children'][cat_name_id]
-	this_cat['path_to_equivalence'] = path_to_equivalence
-	this_cat['type'] = 'sub_equivalence'
-
-	for child_id, child in this_cat['children'].items():
-		record_equivalence_class_membership(this_cat, child_id, child['id'], 
-			flat_cats, path_to_equivalence + [cat_id])
+	for child_id in cat['children']:
+		record_equivalence_class_membership(child_id, cats, path + [cat_id])
 
 
 	
@@ -571,12 +577,12 @@ def strip_down_tree(subtree):
 def strip_down_cats(cats):
 	''' this function removes extraneous attributes from category listings
 	which will obscure the important information in the case of inspecting
-	category-wise feature penetration.
+	category-wise attribute penetration.
 	'''
 	for cat in cats.values():
 		for prop in cat.keys():
 			if prop not in ['parent', 'depth', 'count', 'children', 
-				'singularName', 'features', 'id', 'jaccard']:
+				'singularName', 'attributes', 'id', 'jaccard']:
 				del cat[prop]
 	
 	return cats
@@ -679,8 +685,7 @@ def read_all_products():
 	all_products = []
 	for fname in fnames:
 		print '\treading %s' % fname
-		full_fname = '../data/' + fname
-		all_products.extend(json.loads(open(full_fname, 'r').read()))
+		all_products.extend(json.loads(open(fname, 'r').read()))
 	
 	return all_products
 
