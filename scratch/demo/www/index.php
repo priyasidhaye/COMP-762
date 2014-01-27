@@ -5,20 +5,21 @@
 		<title>Product Exploration</title>		
 	</head>
 	<body>
-		<div id='search'>
+		<div id='demo'>			
+			<h3><span class="label label-info">Product Exploration Demo</span></h3>	
+			
 			<div id='main_searchbar' class="input-group">
 				<input id='main_search_text' type="text" class="form-control" style="width: 350px" placeholder="Please enter product names, brands, etc.">
 				<button id='search_btn' type="button" class="btn btn-info">Search</button>
 				<button id='advance_btn' class='btn'>advanced >></button>
 			</div>
-			
-			<div id='advanced_searchbar'> 
+				
+			<div id='advanced_searchbar' style='display:none'> 
 			</div>
-			<div id='show_msg'>Did you mean...</div>
+			
+			<div id='result'>Result</div>
 			<div id='products_wrapper'></div>
 		</div>
-		
-
 		
 	</body>
 	<script type='text/javascript' src='../common/js/jquery.js'></script>
