@@ -1,11 +1,27 @@
 window.onload = init;
 function init() {
 	$('input').on('keydown', handle_keydown);
+	$('#search_btn').on('keydown', handle_keydown);
+	$('#search_btn').on('click', handle_click);	
 }
 
 function handle_keydown(e) {
-	if(e.which == 13) {
+	if (is_advanced_search) {	
+		if(e.which == 13) {
+			get_products();
+		}
+	} else {
+		if(e.which == 13) {
+			get_products_single();
+		}
+	}
+}
+
+function handle_click() {
+	if (is_advanced_search) {	
 		get_products();
+	} else {
+		get_products_single();
 	}
 }
 
@@ -19,6 +35,29 @@ function get_data(data) {
 			data[elm.attr('name')] = text;
 		}
 	}
+}
+function get_products_single() {
+	var query = $('#main_search_text').val();
+	if (query == '') {
+		return;
+	} 
+	query = query.split(' ');
+	query = '%' + query.join('%,%') + '%';
+	data = {'query': query};
+
+	$.ajax({
+		'url' : 'php/get_eq_class_single.php',
+		'type': 'POST',
+		'data': data,
+		'dataType': 'json',
+		'success': function(data, textStatus, jqXHR) {
+			console.log(data);
+			put_products(data);
+		},
+		'error': function(jqXHR, status, err) {
+			alert(err);
+		}
+	});
 }
 
 function get_products() {
