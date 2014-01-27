@@ -288,6 +288,14 @@ def get_prods_by_cat(cat_id, prods):
 	match_prods = filter(lambda p: p['category']['id'] == cat_id, prods)
 	return match_prods
 
+def get_prods_by_cat_recursive(cat_id, cats, prods):
+	match_prods = get_prods_by_cat(cat_id, prods)
+	for child_id in cats[cat_id]['children']:
+		match_prods.extend(get_prods_by_cat_recursive(child_id, cats, prods))
+	
+	return match_prods
+
+
 def tally_attributes(cats, prods):
 	'''makes a comprehensive list of all attributes found among all the products
 	of leaf categories.  Input is a flattened phonebook of categories (to
@@ -691,4 +699,11 @@ def read_all_products():
 
 
 
+def get_cat_name_recursive(cat_id, cats):
+	cat = cats[cat_id]
+	cat_name = cat['singularName']
+	for child_id in cat['children']:
+		cat_name += ' ' + get_cat_name_recursive(child_id, cats)
+
+	return cat_name
 
