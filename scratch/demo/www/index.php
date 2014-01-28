@@ -22,13 +22,16 @@
 		</div>
 		
 	</body>
-	<script type='text/javascript' src='../common/js/jquery.js'></script>
+	
+	
+	<script src="//code.jquery.com/jquery-1.9.1.js"></script>
+	<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 	<script type='text/javascript' src='js/search.js'></script>
-	<script type='text/javascript' src='js/main.js'></script>	
+	<script type='text/javascript' src='js/main.js'></script>		
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
 	<link rel='stylesheet' type='text/css' href='css/main.css' />
 	<link rel='stylesheet' type='text/css' href='css/search.css' />
 	<link rel='stylesheet' type='text/css' href='../common/css/basic.css' />
-	
 	<!-- Bootstrap -->				
 	<script type='text/javascript' src='js/bootstrap/dist/js/bootstrap.js'></script>
 	<link rel='stylesheet' type='text/css' href='js/bootstrap/dist/css/bootstrap.css' />
