@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>jQuery UI Slider - Colorpicker</title>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/jquery-1.9.1.js"></script>
+<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+<link rel="stylesheet" href="/resources/demos/style.css">
+<style>
+#red, #green, #blue {
+float: left;
+clear: left;
+width: 300px;
+margin: 15px;
+}
+#nospace{
+float: left;
+clear: left;
+width: 300px;
+margin: 30px;
+height: 10px;
+}
+#swatch1 {
+width: 120px;
+height: 100px;
+margin-top: 18px;
+margin-left: 350px;
+background-image: none;
+}
+#swatch2 {
+width: 120px;
+height: 100px;
+margin-top: 0px;
+margin-left: 350px;
+background-image: none;
+}
+#swatch3 {
+width: 120px;
+height: 100px;
+margin-top: 0px;
+margin-left: 350px;
+background-image: none;
+}
+#red .ui-slider-range { background: #ef2929; }
+#red .ui-slider-handle { border-color: #ef2929; }
+#green .ui-slider-range { background: #8ae234; }
+#green .ui-slider-handle { border-color: #8ae234; }
+#blue .ui-slider-range { background: #729fcf; }
+#blue .ui-slider-handle { border-color: #729fcf; }
+</style>
+<script>
+function hexFromRGB(r, g, b) {
+var hex = [
+r.toString( 16 ),
+g.toString( 16 ),
+b.toString( 16 )
+];
+$.each( hex, function( nr, val ) {
+if ( val.length === 1 ) {
+hex[ nr ] = "0" + val;
+}
+});
+return hex.join( "" ).toUpperCase();
+}
+function abcd(){
+alert("hi");
+}
+
+
+function display(number){
+
+if(number == 1)
+displayproduct=product1;
+else if (number == 2)
+displayproduct=product2;
+else if (number==3)
+displayproduct=product3;
+alert (displayproduct.name + "\n Id : "+displayproduct.id+ "\n Best Buy : " +displayproduct.isBestBuy+"\n isTested : "+displayproduct.isTested + "\n is Recommended : " + displayproduct.isRecommended + "\n is BestSeller : " + displayproduct.isBestSeller+"\n");
+}
+
+
+var prod1,maximum1,prod2,maximum2,prod3,maximum3,product1,product2,product3,displayproduct;
+function jsoncomputation(){
+			var i=0,count=0,a,b,c;
+			var red = $( "#red" ).slider( "value" );
+			var green = $( "#green" ).slider( "value" );
+			var blue = $( "#blue" ).slider( "value" );
+$( "#value1" ).val( (red/100));
+$( "#value2" ).val( (green/100));
+$( "#value3" ).val( (blue/100));
+red=red/100;
+green=green/100;
+blue=blue/100;
+	       $.getJSON('data.json',function(data){
+maximum1=data[0].ratings[3].value*red+data[0].ratings[0].value*green+(data[0].ratings[5].value*blue/100);
+maximum2=0;
+maximum3=0;
+prod1=data[0].id;
+prod2=0;
+prod3=0;
+				for (i=0 ; i<data.length;i++)
+				{
+				
+				var jobValue = document.getElementById('display1').value
+					var something=0;
+					something=data[i].ratings[3].value*red+data[i].ratings[0].value*green+(data[i].ratings[5].value*blue/100);
+						if(something>=maximum1)
+					{
+				if(data[i].prod!=jobValue)
+maximum3=maximum2;maximum2=maximum1;maximum1=something;prod3=prod2;prod2=prod1;prod1=data[i].id;product3=product2;product2=product1;product1=data[i];
+				}
+						else if(something>=maximum2)
+					{maximum3=maximum2;prod3=prod2;maximum2=something;prod2=data[i].id;product3=product2;product2=data[i];}
+						else if(something>=maximum3)
+					{maximum3=something;prod3=data[i].id;product3=data[i];}
+						
+				}
+
+$( "#display1" ).val(product1.name);
+
+$( "#display2" ).val(product2.name);
+
+$( "#display3" ).val(product3.name);
+
+            var nishanth = "http://upload.wikimedia.org/wikipedia/commons/0/01/Sachin_Tendulkar.jpg"
+            $( "#swatch1" ).css( "background-image", "url('"+product1.imageThumbnail+"')");
+            $( "#swatch2" ).css( "background-image", "url('"+product2.imageThumbnail+"')");
+            $( "#swatch3" ).css( "background-image", "url('"+product3.imageThumbnail+"')");
+		});
+}
+
+
+
+function refreshSwatch() {
+var red = $( "#red" ).slider( "value" ),
+green = $( "#green" ).slider( "value" ),
+blue = $( "#blue" ).slider( "value" ),
+hex = hexFromRGB( red, green, blue );
+$( "#value1" ).val( (red/100));
+$( "#value2" ).val( (green/100));
+$( "#value3" ).val( (blue/100));
+$( "#swatch1" ).css( "background-image", "url('http://upload.wikimedia.org/wikipedia/commons/a/a1/Rahul_Dravid.jpg')");
+$( "#swatch2" ).css( "background-image", "url('http://upload.wikimedia.org/wikipedia/commons/a/a1/Rahul_Dravid.jpg')");
+$( "#swatch3" ).css( "background-image", "url('http://upload.wikimedia.org/wikipedia/commons/a/a1/Rahul_Dravid.jpg')");
+}
+$(function() {
+$( "#red, #green, #blue" ).slider({
+orientation: "horizontal",
+range: "min",
+min : -500,
+max: 500,
+value: 127,
+slide: jsoncomputation,
+change: jsoncomputation
+});
+$( "#red" ).slider( "value", 255 );
+$( "#green" ).slider( "value", 140 );
+$( "#blue" ).slider( "value", 60 );
+$( "#display1" ).val( "Nishanth");
+$( "#display2" ).val( "Ni");
+$( "#display3" ).val( "COMP-762");
+});
+</script>
+</head>
+<p class="ui-state-default ui-corner-all ui-helper-clearfix" style="padding:4px;">
+<span class="ui-icon ui-icon-pencil" style="float:left; margin:-2px 5px 0 0;"></span>
+Simple ProductPicker
+</p>
+<div id="nospace"> <br>Noise11</div>
+<div id="red"><br /><input type="text" id="value1" style="border:0; color:#f6931f; font-weight:bold;"><br /></div>
+<br />
+<div id="nospace"> <br>Output</div>
+<div id="green"><br ><input type="text" id="value2" style="border:0; color:#f6931f; font-weight:bold;"></div>
+<br />
+<div id="nospace"> <br>Overall score</div>
+
+<div id="blue"><br ><input type="text" id="value3" style="border:0; color:#f6931f; font-weight:bold;"></div>
+<a nohref style="cursor:pointer;color:blue;text-decoration:underline"
+onClick=abcd()>HERE</a>
+YO<br>
+<a nohref style="cursor:pointer;color:blue;text-decoration:underline"
+onClick=display(1)>
+<div id="swatch1" class="ui-widget-content ui-corner-all"></div>
+<br />
+<input type="text" id="display1" style="border:0px; color:#f6931f; font-weight:bold;"></a>
+<a nohref style="cursor:pointer;color:blue;text-decoration:underline"
+onClick=display(2)>
+<div id="swatch2" class="ui-widget-content ui-corner-all"></div>
+<br />
+<input type="text" id="display2" style="border:0px; color:#f6931f; font-weight:bold;"></a>
+<a nohref style="cursor:pointer;color:blue;text-decoration:underline"
+onClick=display(3)>
+<div id="swatch3" class="ui-widget-content ui-corner-all"></div>
+<input type="text" id="display3" style="border:0px; color:#f6931f; position:relative; left:300pt; font-weight:bold;">
+<br></a>
+<a nohref style="cursor:pointer;color:blue;text-decoration:underline"
+onClick=jsoncomputation()>JSON part here</a>
+</body>
+</html>
