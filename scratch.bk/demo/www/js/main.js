@@ -1,17 +1,6 @@
 window.onload = init;
 function init() {
 	$('input').on('keydown', handle_keydown);
-	console.log("lol");
-
-	// ** hook this up to your single search bar **
-	//
-	//$('#single_search_bar').on('keydown', handle_keydown_single);
-}
-
-function handle_keydown(e) {
-	if(e.which == 13) {
-		get_products_single();
-	}
 }
 
 function handle_keydown(e) {
@@ -30,24 +19,6 @@ function get_data(data) {
 			data[elm.attr('name')] = text;
 		}
 	}
-}
-
-function get_products_single() {
-	var query = 'this is just a test!' // get from the search bar!
-	data = {'query': query};
-
-	$.ajax({
-		'url' : 'php/get_eq_class_single.php',
-		'type': 'POST',
-		'data': data,
-		'dataType': 'json',
-		'success': function(data, textStatus, jqXHR) {
-			put_products(data);
-		},
-		'error': function(jqXHR, status, err) {
-			alert(err);
-		}
-	});
 }
 
 function get_products() {

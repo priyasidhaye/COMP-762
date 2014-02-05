@@ -10,7 +10,7 @@ if __name__ == "__main__":
 	extract_all_equivalence(cats, prods)
 
 
-def extract_all_equivalence(cats, prods, write_folder=''):
+def extract_all_equivalence(cats, prods, write_folder):
 	for franch in s.get_franchises(cats):
 		name = franch['singularName'].split()[0]
 		if not write_folder.endswith('/'):
