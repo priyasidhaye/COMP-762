@@ -1,22 +1,27 @@
 window.onload = init;
 function init() {
 	$('input').on('keydown', handle_keydown);
-	console.log("lol");
-
-	// ** hook this up to your single search bar **
-	//
-	//$('#single_search_bar').on('keydown', handle_keydown_single);
+	$('#search_btn').on('keydown', handle_keydown);
+	$('#search_btn').on('click', handle_click);	
 }
 
 function handle_keydown(e) {
-	if(e.which == 13) {
-		get_products_single();
+	if (is_advanced_search) {	
+		if(e.which == 13) {
+			get_products();
+		}
+	} else {
+		if(e.which == 13) {
+			get_products_single();
+		}
 	}
 }
 
-function handle_keydown(e) {
-	if(e.which == 13) {
+function handle_click() {
+	if (is_advanced_search) {	
 		get_products();
+	} else {
+		get_products_single();
 	}
 }
 
@@ -30,6 +35,29 @@ function get_data(data) {
 			data[elm.attr('name')] = text;
 		}
 	}
+}
+function get_products_single() {
+	var query = $('#main_search_text').val();
+	if (query == '') {
+		return;
+	} 
+	query = query.split(' ');
+	query = '%' + query.join('%,%') + '%';
+	data = {'query': query};
+
+	$.ajax({
+		'url' : 'php/get_eq_class_single.php',
+		'type': 'POST',
+		'data': data,
+		'dataType': 'json',
+		'success': function(data, textStatus, jqXHR) {
+			console.log(data);
+			put_products(data);
+		},
+		'error': function(jqXHR, status, err) {
+			alert(err);
+		}
+	});
 }
 
 function get_products_single() {
@@ -73,25 +101,19 @@ function put_products(products) {
 	products_wrapper.html('');
 
 	// tell user what's happening
-	var show_msg = $('#show_msg');
+	var result = $('#result');
 	if(products.length) {
-		show_msg.html('Did you mean...');
-		show_msg.css('display', 'block');
+		result.html('Did you mean...');
+		result.css('display', 'block');
 	} else {
-		show_msg.html('Sorry, no matches...');
-		show_msg.css('display', 'block');
+		result.html('Sorry, no matches...');
+		result.css('display', 'block');
 	}
 
-	for(var i=0; i<products.length; i++) {
-		var new_div = $("<div class='suggest_eq_class'>"+products[i]['name']+"</div>");
-		var img = $("<img class='suggest_img' src='" + products[i]['image_url'] + "' />");
-		var clear_div = $("<div class='clear'></div>");
-		var suggest_div = $("<div class='suggest_div'></div>");
-		suggest_div.append(img);
-		suggest_div.append(new_div);
-		suggest_div.append(clear_div);
-		suggest_div.on('click', arm_suggest_on_click(products[i]['prod_ids']));
-		products_wrapper.append(suggest_div);
+	for(var i=0; i<products.length; i++)  {
+		var entry = $('<div>').addClass('result-entry').text(products[i]['name']).appendTo(products_wrapper);
+		var badge = $('<span>').addClass('badge').addClass('result-entry-count').text(products[i]['prod_ids'].split(' ').length).appendTo(entry);
+		badge.on('click', arm_suggest_on_click(products[i]['prod_ids']));
 	}
 }
 
